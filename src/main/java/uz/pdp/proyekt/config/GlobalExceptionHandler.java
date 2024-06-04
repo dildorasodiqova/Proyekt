@@ -5,7 +5,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import uz.pdp.proyekt.exception.BadRequestException;
 import uz.pdp.proyekt.exception.DataAlreadyExistsException;
+import uz.pdp.proyekt.exception.DataNotEnoughException;
 import uz.pdp.proyekt.exception.DataNotFoundException;
 
 @ControllerAdvice
@@ -23,6 +25,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = DataNotFoundException.class)
     public ResponseEntity<String> dataNotFound (DataNotFoundException e) {
         return ResponseEntity.status(404).body(e.getMessage());
+    }
+
+    @ExceptionHandler(value = DataNotEnoughException.class)
+    public ResponseEntity<String> dataNotEnough(DataNotEnoughException e){
+        return  ResponseEntity.status(HttpStatus.BANDWIDTH_LIMIT_EXCEEDED).body(e.getMessage());
+    }
+
+    @ExceptionHandler(value = BadRequestException.class)
+    public ResponseEntity<String> badRequest(BadRequestException e){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
 

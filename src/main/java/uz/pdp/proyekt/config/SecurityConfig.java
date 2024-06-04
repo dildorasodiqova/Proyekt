@@ -15,9 +15,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.HandlerExceptionResolver;
-import uz.pdp.kahoot.service.jwt.AuthenticationService;
-import uz.pdp.kahoot.service.jwt.JwtFilter;
-import uz.pdp.kahoot.service.jwt.JwtService;
+import uz.pdp.proyekt.service.jwt.AuthenticationService;
+import uz.pdp.proyekt.service.jwt.JwtFilter;
+import uz.pdp.proyekt.service.jwt.JwtService;
 
 import java.util.Arrays;
 

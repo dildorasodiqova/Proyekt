@@ -27,11 +27,11 @@ public class UserEntity extends BaseEntity implements UserDetails {
     private String password;
     private UserRole userRole;
 
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Set.of(new SimpleGrantedAuthority(userRole.name()));
     }
-
     @Override
     public String getUsername() {
         return email;
@@ -52,8 +52,17 @@ public class UserEntity extends BaseEntity implements UserDetails {
         return true;
     }
 
+
     @Override
     public boolean isEnabled() {
         return super.isActive;
     }
+
+
+
+
+
+
+
+
 }

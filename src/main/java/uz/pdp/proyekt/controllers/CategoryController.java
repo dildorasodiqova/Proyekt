@@ -7,10 +7,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import uz.pdp.proyekt.dtos.createDtos.CategoryCreateDto;
 import uz.pdp.proyekt.dtos.responseDto.CategoryResponseDto;
 import uz.pdp.proyekt.service.categoryService.CategoryService;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -50,10 +52,10 @@ public class CategoryController {
             security = @SecurityRequirement(name = "pre authorize", scopes = {"TEACHER"})
     )
     @PreAuthorize(value = "hasAuthority('TEACHER')")
-    @GetMapping("/all")
+    @GetMapping("/get-all")
     public ResponseEntity<List<CategoryResponseDto>> getAll(@RequestParam(value = "page", defaultValue = "0")
                                                               int page,
-                                                              @RequestParam(value = "size", defaultValue = "5")
+                                                            @RequestParam(value = "size", defaultValue = "5")
                                                               int size) {
         return ResponseEntity.ok(categoryService.getAll(page, size));
     }

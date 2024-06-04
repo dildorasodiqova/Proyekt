@@ -20,21 +20,34 @@ public class UserController {
     private final UserService userService;
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping("/me")
+    @GetMapping("/getById")
     public UserResponseDto getById(Principal principal) {
         return userService.getById(UUID.fromString(principal.getName()));
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/get-all")
-    public List<UserResponseDto> getAll(@RequestParam(defaultValue = "") String role) {
-        return userService.getAll(role);
+    public List<UserResponseDto> getAll(@RequestParam(value = "page", defaultValue = "0")
+                                            int page,
+                                        @RequestParam(value = "size", defaultValue = "5")
+                                            int size) {
+        return userService.getAll(page, size);
     }
 
+
     @PreAuthorize("hasAuthority('ADMIN')")
-    @DeleteMapping("/{userId}")
+    @DeleteMapping("/delete/{userId}")
     public String delete(@PathVariable UUID userId) {
         return userService.deleteUser(userId);
     }
 
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PutMapping("/updateStatus/{userId}")
+    public String updateStatus(@PathVariable UUID userId,
+                               @RequestParam Boolean status,
+                               Principal principal) {
+        return userService.updateStatus(userId, status, UUID.fromString(principal.getName()));
+
+    }
 }

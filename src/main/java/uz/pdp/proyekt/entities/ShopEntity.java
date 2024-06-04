@@ -14,12 +14,12 @@ import lombok.Setter;
 @Setter
 @Entity(name = "ShopEntity")
 @Table(name = "shop_entity")
-public class ShopEntity {
+public class ShopEntity extends BaseEntity {
 
     private String name;
     private String aboutUs;
 
 
-    @OneToMany
+    @OneToMany()
     private CategoryEntity category;
 }

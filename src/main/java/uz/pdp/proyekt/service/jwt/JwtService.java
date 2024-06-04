@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
-import uz.pdp.eticket.entity.UserEntity;
+import uz.pdp.proyekt.entities.UserEntity;
 
 import java.util.Date;
 import java.util.Map;

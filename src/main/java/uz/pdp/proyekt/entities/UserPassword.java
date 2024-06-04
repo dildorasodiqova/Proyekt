@@ -2,25 +2,22 @@ package uz.pdp.proyekt.entities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.UUID;
+import java.time.LocalDateTime;
 
-
+@Entity(name = "Passwords")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-@Entity(name = "CategoryEntity")
-@Table(name = "category_entity")
-public class CategoryEntity extends BaseEntity {
-    private String name;
-    private String
+public class UserPassword extends BaseEntity{
+    private String code;
     @ManyToOne
-    private CategoryEntity parentId;
-
+    private UserEntity user;
+    private LocalDateTime sentDate;
+    private Integer expiry;
 }
