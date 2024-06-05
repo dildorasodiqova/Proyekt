@@ -36,21 +36,17 @@ public class ProductServiceImpl implements ProductService{
     @Transactional
     @Override
     public ProductResponseDto save(ProductCreateDto dto) {
-//        ProductResponseDto product = null;
-//        try {
-//            product = createProduct(dto);
-//        } catch (PSQLException e) {
-//            throw new DataNotFoundException("Product already exists");
-//        }
-//        return BaseResponse.<ProductResponseDto>builder()
-//                .code(200)
-//                .message("success")
-//                .success(true)
-//                .data(product)
-//                .build();
+        ProductResponseDto product = null;
+        try {
+            product = createProduct(dto);
+        } catch (PSQLException e) {
+            throw new DataNotFoundException("Product already exists");
+        }
+        return product;
     }
 
 
+    @Transactional
     @Override
     public List<ProductResponseDto> allOfCategory(UUID categoryId, int size, int page) {
         PageRequest pageRequest =  PageRequest.of(page, size);
@@ -59,6 +55,7 @@ public class ProductServiceImpl implements ProductService{
 
     }
 
+    @Transactional
     @Override
     public List<ProductResponseDto> search(String word) {
         List<ProductEntity> products = productRepository.searchByProductNameOrCategoryName(word);
@@ -165,6 +162,7 @@ public class ProductServiceImpl implements ProductService{
                 photosId);
     }
 
+
     public List<ProductResponseDto> parse(List<ProductEntity> products) {
 /*List<Product> all = productRepository.getAllByUserIdAndCategory_id(userId, categoryId);
         List<ProductResponseDto> responseDtos = new ArrayList<>();
@@ -186,7 +184,7 @@ public class ProductServiceImpl implements ProductService{
             ProductResponseDto map = modelMapper.map(product,ProductResponseDto.class);
             map.setId(product.getId());
             List<ProductPhotos> byProductId = productPhotosService.getByProductId(product.getId());
-            List<UUID> photosId = getPhotosId(byProductId.getData());
+            List<UUID> photosId = getPhotosId(byProductId);
             map.setPhotos(photosId);
             list.add(map);
         }
