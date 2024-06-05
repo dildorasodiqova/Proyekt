@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,39 +38,44 @@ public class ProductServiceImpl implements ProductService{
     private final ModelMapper modelMapper;
     @Transactional
     @Override
-    public ProductResponseDto save(ProductCreateDto dto){
-        System.out.println("dto = " + dto);
+    public ProductResponseDto save(ProductCreateDto dto) {
         if (productRepository.findByName(dto.getName()).isPresent()) {
             throw new DataAlreadyExistsException("Product already exists");
         }
-        CategoryEntity id = categoryService.findById(dto.getCategoryId());
-        ProductEntity product = new ProductEntity(dto.getName(),
+
+        CategoryEntity category = categoryService.findById(dto.getCategoryId());
+        ProductEntity product = new ProductEntity(
+                dto.getName(),
                 dto.getOldCount(),
                 dto.getNowCount(),
                 dto.getPrice(),
                 dto.getDescription(),
-                id);
+                category
+        );
 
-        ProductEntity save = productRepository.save(product);
+        ProductEntity savedProduct = productRepository.save(product);
 
         List<AttachmentEntity> photos = attachmentRepository.findAllById(dto.getPhotos());
-        List<ProductPhotos> list = new ArrayList<>();
-        for (int i = 0; i < photos.size(); i++) {
-            ProductPhotos productPhotos = new ProductPhotos();
-            productPhotos.setProduct(save);
-            productPhotos.setPhoto(photos.get(i));
-            productPhotos.setOrderIndex(i);
-            productPhotosService.save(productPhotos);
-            list.add(productPhotos);
-        }
+        List<ProductPhotos> productPhotosList = photos.stream()
+                .map(photo -> {
+                    ProductPhotos productPhotos = new ProductPhotos();
+                    productPhotos.setProduct(savedProduct);
+                    productPhotos.setPhoto(photo);
+                    productPhotos.setOrderIndex(photos.indexOf(photo));
+                    productPhotosService.save(productPhotos);
+                    return productPhotos;
+                })
+                .collect(Collectors.toList());
 
-        List<UUID> photosId = getPhotosId(list);
+        List<UUID> photosId = getPhotosId(productPhotosList);
 
-        ProductResponseDto map = modelMapper.map(save, ProductResponseDto.class);
-        map.setCategory(new CategoryShortInfo(save.getCategory().getId(), save.getCategory().getName()));
-        map.setPhotos(photosId);
-        return map;
+        ProductResponseDto responseDto = modelMapper.map(savedProduct, ProductResponseDto.class);
+        responseDto.setCategory(new CategoryShortInfo(category.getId(), category.getName()));
+        responseDto.setPhotos(photosId);
+
+        return responseDto;
     }
+
 
 
 
@@ -144,12 +150,11 @@ public class ProductServiceImpl implements ProductService{
 
 
     public List<UUID> getPhotosId(List<ProductPhotos> productPhotos) {
-        List<UUID> list = new ArrayList<>();
-        for (ProductPhotos productPhoto : productPhotos) {
-            list.add(productPhoto.getPhoto().getId());
-        }
-        return list;
+        return productPhotos.stream()
+                .map(productPhoto -> productPhoto.getPhoto().getId())
+                .collect(Collectors.toList());
     }
+
 
     @Override
     public BaseResponse<String> delete(UUID productId) {
@@ -167,18 +172,17 @@ public class ProductServiceImpl implements ProductService{
 
 
 
-    public List<ProductResponseDto> parse(List<ProductEntity> products) {
-        List<ProductResponseDto> list = new ArrayList<>();
-        for (ProductEntity product : products) {
-            ProductResponseDto map = modelMapper.map(product,ProductResponseDto.class);
+    private List<ProductResponseDto> parse(List<ProductEntity> products) {
+        return products.stream().map(product -> {
+            ProductResponseDto map = modelMapper.map(product, ProductResponseDto.class);
             map.setId(product.getId());
             List<ProductPhotos> byProductId = productPhotosService.getByProductId(product.getId());
             List<UUID> photosId = getPhotosId(byProductId);
             map.setPhotos(photosId);
-            list.add(map);
-        }
-        return list;
+            return map;
+        }).collect(Collectors.toList());
     }
+
 
 
     @Override

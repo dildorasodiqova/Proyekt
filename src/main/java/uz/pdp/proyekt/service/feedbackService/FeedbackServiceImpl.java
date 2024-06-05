@@ -16,6 +16,7 @@ import uz.pdp.proyekt.service.productService.ProductService;
 import uz.pdp.proyekt.service.userService.UserService;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static uz.pdp.proyekt.enums.UserRole.ADMIN;
 
@@ -47,13 +48,11 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Override
     public List<FeedbackResponseDTO> getByProductId(UUID productId) {
         List<FeedbackEntity> allByProductId = feedBackRepository.findAllByProductId(productId);
-        List<FeedbackResponseDTO> list = new ArrayList<>();
-        for (FeedbackEntity feedback : allByProductId) {
-            FeedbackResponseDTO parse = parse(feedback);
-            list.add(parse);
-        }
-        return list;
+        return allByProductId.stream()
+                .map(this::parse)
+                .collect(Collectors.toList());
     }
+
 
     @Override
     public String delete(UUID feedbackId, UUID userId)  {

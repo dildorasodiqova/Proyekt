@@ -20,9 +20,9 @@ public class UserController {
     private final UserService userService;
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping("/getById")
-    public UserResponseDto getById(Principal principal) {
-        return userService.getById(UUID.fromString(principal.getName()));
+    @GetMapping("/getById/{userId}")
+    public UserResponseDto getById(@PathVariable UUID userId) {
+        return userService.getById(userId);
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")

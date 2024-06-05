@@ -2,7 +2,10 @@ package uz.pdp.proyekt.service.categoryService;
 
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uz.pdp.proyekt.dtos.createDtos.CategoryCreateDto;
 import uz.pdp.proyekt.dtos.responseDto.BaseResponse;
@@ -26,15 +29,11 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryResponseDto create(CategoryCreateDto dto, UUID uuid) {
         Optional<CategoryEntity> byName = categoryRepository.findByName(dto.getName());
-        if (byName.isPresent()) {
-            throw new DataAlreadyExistsException("This category name already exist.");
-        }
-        if (dto.getParentId() == null) {
-            categoryRepository.save(new CategoryEntity(dto.getName(), null));
-        }
-        CategoryEntity entity = categoryRepository.findById(dto.getParentId()).orElseThrow(() -> new DataNotFoundException("Category not found !"));
-
-        return parse(categoryRepository.save(new CategoryEntity(dto.getName(), entity)));
+        if (byName.isPresent()) throw new DataAlreadyExistsException("This category name already exist.");
+        CategoryEntity parent = null;
+        if (dto.getParentId() != null)
+            parent = categoryRepository.findById(dto.getParentId()).orElseThrow(() -> new DataNotFoundException("Category not found !"));
+        return parse(categoryRepository.save(new CategoryEntity(dto.getName(), parent)));
     }
 
     @Override
@@ -45,12 +44,9 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     private List<CategoryResponseDto> parse(List<CategoryEntity> all) {
-        List<CategoryResponseDto> list = new ArrayList<>();
-        for (CategoryEntity category : all) {
-            list.add(modelMapper.map(category, CategoryResponseDto.class));
-        }
-        return list;
+        return all.stream().map(item->modelMapper.map(item,CategoryResponseDto.class)).toList();
     }
+
 
     private CategoryResponseDto parse(CategoryEntity entity) {
         return modelMapper.map(entity, CategoryResponseDto.class);
@@ -63,8 +59,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryResponseDto getById(UUID categoryId) {
-        CategoryEntity categoryBy = categoryRepository.findById(categoryId).orElseThrow(() -> new DataNotFoundException("Category not found"));
-        return modelMapper.map(categoryBy, CategoryResponseDto.class);
+        return parse(categoryRepository.findById(categoryId).orElseThrow(() -> new DataNotFoundException("Category not found")));
     }
 
     @Override
@@ -84,32 +79,28 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public BaseResponse<List<CategoryResponseDto>> subCategories(UUID parentId, int page, int size ) {
-        PageRequest pageRequest = PageRequest.of(page, size);
-        List<CategoryEntity> categoriesByParentId = categoryRepository.getCategoryEntitiesByParentId(parentId, pageRequest).stream().toList();
-        List<CategoryResponseDto> parse = parse(categoriesByParentId);
-        return BaseResponse.<List<CategoryResponseDto>>builder()
+    public BaseResponse<PageImpl<CategoryResponseDto>> subCategories(UUID parentId, int page, int size) {
+        Pageable pageRequest = PageRequest.of(page, size);
+        Page<CategoryEntity> categoriesByParentId = categoryRepository.getCategoryEntitiesByParentId_Id(parentId, pageRequest);
+        List<CategoryResponseDto> parse = parse(categoriesByParentId.getContent());
+        return BaseResponse.<PageImpl<CategoryResponseDto>>builder()
                 .message("success")
-                .data(parse)
+                .data(new PageImpl<>(parse, pageRequest, categoriesByParentId.getTotalElements()))
                 .success(true)
                 .code(200)
                 .build();
     }
 
+
     @Override
     public BaseResponse<List<CategoryResponseDto>> firstCategories() {
-        List<CategoryEntity> categories = categoryRepository.getFirstCategory();
-        List<CategoryResponseDto> list = new ArrayList<>();
-        for (CategoryEntity category : categories) {
-            if (category.getIsActive()) {
-                list.add(modelMapper.map(category,CategoryResponseDto.class));
-            }
-        }
         return BaseResponse.<List<CategoryResponseDto>>builder()
                 .message("success")
                 .success(true)
                 .code(200)
-                .data(list).build();
+                .data(categoryRepository.getFirstCategory().stream().filter(CategoryEntity::getIsActive).map(this::parse).toList())
+                .build();
     }
+
 }
 

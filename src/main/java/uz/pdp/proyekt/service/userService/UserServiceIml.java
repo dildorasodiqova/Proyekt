@@ -8,6 +8,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import uz.pdp.proyekt.dtos.createDtos.*;
@@ -64,15 +65,15 @@ public class UserServiceIml implements UserService{
     @Override
     public JwtResponse signIn(SignInDto dto) {
         UserEntity userEntity = userRepository.findAllByEmailOrUsername(dto.getUsernameOrEmail(), dto.getUsernameOrEmail())
-                .orElseThrow(() -> new DataNotFoundException("User not found ! \n Please try again."));
-            if(passwordEncoder.matches(dto.getPassword(), userEntity.getPassword())) {
-                return new JwtResponse(jwtService.generateAccessToken(userEntity), jwtService.generateRefreshToken(userEntity));
-            }
+                .orElseThrow(() -> new DataNotFoundException("User not found! Please try again."));
+
+        if (!passwordEncoder.matches(dto.getPassword(), userEntity.getPassword())) {
             throw new AuthenticationCredentialsNotFoundException("Password didn't match");
+        }
 
-        throw new AuthenticationCredentialsNotFoundException("Not verified");
-
+        return new JwtResponse(jwtService.generateAccessToken(userEntity), jwtService.generateRefreshToken(userEntity));
     }
+
 
     @Override
     public List<UserResponseDto> getAll(int page, int size) {
@@ -102,16 +103,20 @@ public class UserServiceIml implements UserService{
     public String updateStatus(UUID userId, Boolean status, UUID currentUser) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new DataNotFoundException("User not found with id: " + userId));
-        UserEntity current = userRepository.findById(currentUser)
-                .orElseThrow(() -> new DataNotFoundException("User not found with id: " + userId));
 
-        if (!current.getUserRole().equals(UserRole.ADMIN)){
+        UserEntity current = userRepository.findById(currentUser)
+                .orElseThrow(() -> new DataNotFoundException("User not found with id: " + currentUser));
+
+        if (!current.getUserRole().equals(UserRole.ADMIN)) {
             throw new BadRequestException("Only admin can update the status.");
         }
+
         user.setIsActive(status);
         userRepository.save(user);
+
         return "Successfully";
     }
+
 
     @Override
     public UserEntity findById(UUID userId) {
@@ -129,7 +134,7 @@ public class UserServiceIml implements UserService{
         Duration duration = Duration.between(sentDate, currentTime);
         long minutes = duration.toMinutes();
         if(minutes <= passwords.getExpiry()) {
-            userEntity.setIsAuthenticated(true);
+            SecurityContextHolder.getContext().getAuthentication().isAuthenticated();
             userRepository.save(userEntity);
             return parse(userEntity);
         }
@@ -139,7 +144,7 @@ public class UserServiceIml implements UserService{
     public String forgetPassword(ForgetDto forgetDto) {
         UserEntity userEntity = userRepository.findByEmail(forgetDto.getEmail())
                 .orElseThrow(() -> new DataNotFoundException("User not found with email: "));
-        if(!userEntity.getIsAuthenticated()) {
+        if(SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
             throw new AuthenticationCredentialsNotFoundException("User is not verified");
         }
 

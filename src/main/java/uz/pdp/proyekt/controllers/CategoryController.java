@@ -34,17 +34,17 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.create(dto, UUID.fromString(principal.getName())));
     }
 
-//
-//    @Operation(
-//            description = "This method returns a single Category",
-//            method = "GET method is supported",
-//            security = @SecurityRequirement(name = "pre authorize", scopes = {"TEACHER"})
-//    )
-//    @PreAuthorize(value = "hasAuthority('TEACHER')")
-//    @GetMapping("/getById/{categoryId}")
-//    public ResponseEntity<CategoryResponseDto> getById(@PathVariable UUID categoryId){
-//        return ResponseEntity.ok(categoryService.getById(categoryId));
-//    }
+
+    @Operation(
+            description = "This method returns a single Category",
+            method = "GET method is supported",
+            security = @SecurityRequirement(name = "pre authorize", scopes = {"TEACHER"})
+    )
+    @PreAuthorize(value = "hasAuthority('TEACHER')")
+    @GetMapping("/getById/{categoryId}")
+    public ResponseEntity<CategoryResponseDto> getById(@PathVariable UUID categoryId){
+        return ResponseEntity.ok(categoryService.getById(categoryId));
+    }
 
 
     @Operation(

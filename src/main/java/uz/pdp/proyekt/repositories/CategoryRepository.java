@@ -15,10 +15,12 @@ import java.util.UUID;
 public interface CategoryRepository extends JpaRepository<CategoryEntity, UUID> {
 
     Optional<CategoryEntity> findByName(String name);
-    Page<CategoryEntity> getCategoryEntitiesByParentId(UUID parentId, Pageable pageable);
-    Page<CategoryEntity> findAllByIsActiveTrue(PageRequest pageRequest);
+    Page<CategoryEntity> getCategoryEntitiesByParentId_Id(UUID parentId, Pageable pageable);
 
-    @Query("select c from CategoryEntity  c where c.id != ?1 and c.name = ?2")
+    Page<CategoryEntity> findAllByIsActiveTrue(Pageable pageable);
+
+
+    @Query("select  count(c)>0 from  CategoryEntity  c where c.id != ?1 and c.name = ?2")
     Boolean existsAllBy(UUID categoryId, String name);
 
     @Query("select c from CategoryEntity c where c.parentId is null")

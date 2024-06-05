@@ -18,6 +18,7 @@ import uz.pdp.proyekt.service.orderProductService.OrderProductService;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static uz.pdp.proyekt.enums.OrderStatus.CANCELLED;
 import static uz.pdp.proyekt.enums.OrderStatus.NEW;
@@ -38,12 +39,7 @@ public class OrderServiceImpl implements OrderService {
         for (OrderProductCreateDTO product : dto.getProducts()) {
             price += product.getPrice();
         }
-
-        /**
-        orderProductService.parse(products);
-        buyerda create dto kirib kelyapti shuni saqlaymizmi
-        **/
-        OrderEntity order = new OrderEntity(user, price,   shuyeerga nimadur, NEW, false);
+        OrderEntity order = new OrderEntity(user, price, NEW, false);
         orderRepository.save(order);
         List<OrderProductResponseDTO> save = orderProductService.save(order, dto.getProducts()).getData();
         return parse(order, save);
@@ -60,6 +56,9 @@ public class OrderServiceImpl implements OrderService {
        return map;
     }
 
+
+
+
     @Override
     public OrderResponseDto cancel(UUID orderId) {
         OrderEntity order = orderRepository.findById(orderId).orElseThrow(() -> new DataNotFoundException("Order not found"));
@@ -70,24 +69,28 @@ public class OrderServiceImpl implements OrderService {
 
 
 
+
     @Override
     public BaseResponse<OrderResponseDto> update(UUID orderId, OrderCreateDto dto) {
-        OrderEntity order = orderRepository.findById(orderId).orElseThrow(() -> new DataNotFoundException("Order not found"));
-        double price = 0;
-        for (OrderProductCreateDTO product : dto.getProducts()) {
-            price += product.getPrice();
-        }
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new DataNotFoundException("Order not found"));
+
+        double price = dto.getProducts().stream()
+                .mapToDouble(OrderProductCreateDTO::getPrice)
+                .sum();
         order.setPrice(price);
         orderRepository.save(order);
+
         List<OrderProductResponseDTO> update = orderProductService.update(dto.getProducts(), order).getData();
+
         return BaseResponse.<OrderResponseDto>builder()
                 .data(parse(order, update))
                 .success(true)
                 .message("success")
                 .code(200)
                 .build();
-
     }
+
 
     private OrderResponseDto parse(OrderEntity order, List<OrderProductResponseDTO> save) {
         return new OrderResponseDto(order.getId(), order.getUser().getId(), order.getPrice(), save, order.getCreatedDate(), order.getUpdateDate());

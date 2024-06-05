@@ -31,4 +31,10 @@ public class OrderEntity extends BaseEntity{
 
     private boolean delivery; /// true bo'lsa uyiga yetkazgan bo'ladi, false bo'lsa punkitga
 
+    public OrderEntity(UserEntity user, double price, OrderStatus orderStatus, boolean delivery) {
+        this.user = user;
+        this.price = price;
+        this.status = orderStatus;
+        this.delivery = delivery;
+    }
 }

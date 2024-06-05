@@ -1,5 +1,6 @@
 package uz.pdp.proyekt.service.categoryService;
 
+import org.springframework.data.domain.PageImpl;
 import uz.pdp.proyekt.dtos.createDtos.CategoryCreateDto;
 import uz.pdp.proyekt.dtos.responseDto.BaseResponse;
 import uz.pdp.proyekt.dtos.responseDto.CategoryResponseDto;
@@ -15,7 +16,7 @@ public interface CategoryService {
 
     CategoryEntity findById(UUID categoryId);
     CategoryResponseDto getById(UUID categoryId);
-    BaseResponse<List<CategoryResponseDto>> subCategories(UUID parentId, int page, int size );
+    BaseResponse<PageImpl<CategoryResponseDto>> subCategories(UUID parentId, int page, int size );
 
     BaseResponse<List<CategoryResponseDto>> firstCategories();
     BaseResponse<String> update(UUID categoryId, CategoryCreateDto dto);
