@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -44,7 +45,7 @@ public class ProductLikeController {
     )
     @PreAuthorize(value = "hasAuthority('USER')")
     @GetMapping("/product-like-of-user")
-    public ResponseEntity<BaseResponse<List<ProductLikeResponseDto>>> getAll(
+    public ResponseEntity<BaseResponse<PageImpl<ProductLikeResponseDto>>> getAll(
                     @RequestParam(required = false, defaultValue = "1") int size,
                     @RequestParam(required = false, defaultValue = "10") int page,
                     Principal principal

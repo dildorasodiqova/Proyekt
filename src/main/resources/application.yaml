@@ -25,6 +25,9 @@ spring:
           starttls:
             enable: true
             required: true
+  flyway:
+    enabled: false
+
 
 springdoc:
   api-docs:

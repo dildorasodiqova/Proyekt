@@ -1,6 +1,8 @@
 package uz.pdp.proyekt.service.productLikeService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import uz.pdp.proyekt.dtos.createDtos.ProductLikeCreateDto;
@@ -45,10 +47,10 @@ public class ProductLikeServiceImpl implements ProductLikeService{
 
 
     @Override
-    public BaseResponse<List<ProductLikeResponseDto>> allOfUser(int size, int page, UUID userId) {
+    public BaseResponse<PageImpl<ProductLikeResponseDto>> allOfUser(int size, int page, UUID userId) {
         PageRequest pageRequest = PageRequest.of(page, size);
-        return  BaseResponse.<List<ProductLikeResponseDto>>builder()
-                .data(parse(productLikeRepository.getAllByUserId(userId, pageRequest)))
+        return  BaseResponse.<PageImpl<ProductLikeResponseDto>>builder()
+                .data(new PageImpl<>(parse(productLikeRepository.getAllByUserId(userId, pageRequest))))
                 .success(true)
                 .message("success")
                 .code(200)

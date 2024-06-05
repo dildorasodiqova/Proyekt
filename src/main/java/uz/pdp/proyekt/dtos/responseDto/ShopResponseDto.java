@@ -14,7 +14,8 @@ import java.util.UUID;
 @Setter
 public class ShopResponseDto {
     private UUID id;
-
+    private String name;
+    private String aboutUs;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
 }

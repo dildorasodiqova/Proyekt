@@ -1,5 +1,6 @@
 package uz.pdp.proyekt.dtos.createDtos;
 
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,5 +11,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ShopCreateDto {
-    o
+    @Column(nullable = false)
+    private String name;
+
+    private String aboutUs;
 }

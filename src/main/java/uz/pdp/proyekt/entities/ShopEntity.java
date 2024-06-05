@@ -21,7 +21,4 @@ public class ShopEntity extends BaseEntity {
 
     private String aboutUs;
 
-
-    @OneToMany()
-    private CategoryEntity category;
 }

@@ -2,6 +2,8 @@ package uz.pdp.proyekt.dtos.responseDto;
 
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
