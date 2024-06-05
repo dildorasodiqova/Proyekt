@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -18,4 +19,5 @@ public class ProductCreateDto {
     private Double price;
     private String description;
     private UUID categoryId;
+    private List<UUID> photos;
 }

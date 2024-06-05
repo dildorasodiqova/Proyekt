@@ -1,9 +1,6 @@
 package uz.pdp.proyekt.service.userService;
 
-import uz.pdp.proyekt.dtos.createDtos.ForgetDto;
-import uz.pdp.proyekt.dtos.createDtos.SignInDto;
-import uz.pdp.proyekt.dtos.createDtos.UserCreateDto;
-import uz.pdp.proyekt.dtos.createDtos.VerifyDto;
+import uz.pdp.proyekt.dtos.createDtos.*;
 import uz.pdp.proyekt.dtos.responseDto.JwtResponse;
 import uz.pdp.proyekt.dtos.responseDto.UserResponseDto;
 import uz.pdp.proyekt.entities.UserEntity;
@@ -13,23 +10,28 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
-    UserEntity findById(UUID userId);
-
     UserResponseDto signUp(UserCreateDto userCreateDto);
 
+    JwtResponse signIn(SignInDto signInDto);
+
     String deleteUser(UUID userId);
+    List<UserResponseDto> getAll(int page, int size);
+    String updateStatus(UUID userId, Boolean status, UUID uuid);
+
+    UserResponseDto getById(UUID uuid);
+    UserEntity findById(UUID userId);
+
     void emailSend(UserEntity userEntity);
+
     UserResponseDto verify(VerifyDto verifyDto);
 
     String forgetPassword(ForgetDto forgetDto);
 
-    JwtResponse signIn(SignInDto signInDto);
+    String getAccessToken(String refreshToken, UUID userId);
 
-    List<UserResponseDto> getAll(int page, int size);
+    String getVerificationCode(String email);
 
-    UserResponseDto getById(UUID uuid);
+    SubjectDto verifyToken(String token);
 
-    String updateStatus(UUID userId, Boolean status, UUID uuid);
 
-    String forgetPassword(ForgetDto forgetDto);
 }

@@ -11,5 +11,5 @@ public interface FeedbackService {
     FeedbackResponseDTO create(FeedBackCreateDTO dto);
     FeedbackResponseDTO findById(UUID feedbackId);
     List<FeedbackResponseDTO> getByProductId(UUID productId);
-    String delete(UUID feedbackId, UUID userId) throws BadRequestException;
+    String delete(UUID feedbackId, UUID userId);
 }

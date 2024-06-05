@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uz.pdp.proyekt.dtos.createDtos.CategoryCreateDto;
+import uz.pdp.proyekt.dtos.responseDto.BaseResponse;
 import uz.pdp.proyekt.dtos.responseDto.CategoryResponseDto;
 import uz.pdp.proyekt.service.categoryService.CategoryService;
 
@@ -25,9 +26,9 @@ public class CategoryController {
     @Operation(
             description = "This method is used to add category",
             method = "POST method is supported",
-            security = @SecurityRequirement(name = "pre authorize", scopes = {"TEACHER"})
+            security = @SecurityRequirement(name = "pre authorize", scopes = {"ADMIN"})
     )
-    @PreAuthorize(value = "hasAuthority('TEACHER')")
+    @PreAuthorize(value = "hasAuthority('ADMIN')")
     @PostMapping()
     public ResponseEntity<CategoryResponseDto> create(@Valid @RequestBody CategoryCreateDto dto, Principal principal){
         return ResponseEntity.ok(categoryService.create(dto, UUID.fromString(principal.getName())));
@@ -55,7 +56,7 @@ public class CategoryController {
     @GetMapping("/get-all")
     public ResponseEntity<List<CategoryResponseDto>> getAll(@RequestParam(value = "page", defaultValue = "0")
                                                               int page,
-                                                            @RequestParam(value = "size", defaultValue = "5")
+                                                            @RequestParam(value = "size", defaultValue = "10")
                                                               int size) {
         return ResponseEntity.ok(categoryService.getAll(page, size));
     }
@@ -67,7 +68,7 @@ public class CategoryController {
     )
     @PreAuthorize(value = "hasAuthority('TEACHER')")
     @PutMapping("/update/{categoryId}")
-    public ResponseEntity<CategoryResponseDto> update(@RequestBody CategoryCreateDto dto, @PathVariable UUID categoryId) {
+    public ResponseEntity<BaseResponse<String>> update(@RequestBody CategoryCreateDto dto, @PathVariable UUID categoryId) {
         return ResponseEntity.ok(categoryService.update(categoryId, dto));
     }
 

@@ -1,5 +1,8 @@
 package uz.pdp.proyekt.service.userService;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jws;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.modelmapper.ModelMapper;
@@ -37,11 +40,6 @@ public class UserServiceIml implements UserService{
     private final PasswordRepository passwordRepository;
     private final ModelMapper modelMapper;
     @Override
-    public UserEntity findById(UUID userId) {
-        return userRepository.findById(userId).orElseThrow(()-> new DataNotFoundException(" User not found !"));
-    }
-
-    @Override
     public UserResponseDto signUp(UserCreateDto dto) {
         Optional<UserEntity> optionalUser = userRepository.findAllByEmailOrUsername(dto.getEmail(), dto.getUsername());
         if(optionalUser.isPresent()) {
@@ -52,24 +50,6 @@ public class UserServiceIml implements UserService{
         userRepository.save(user);
         emailSend(user);
         return parse(user);
-    }
-
-    @Override
-    public UserResponseDto verify(VerifyDto verifyDto) {
-        UserEntity userEntity = userRepository.findByEmail(verifyDto.getEmail())
-                .orElseThrow(() -> new DataNotFoundException("User not found with email: " + verifyDto.getEmail()));
-        UserPassword passwords = passwordRepository.getUserPasswordById(userEntity.getId(),verifyDto.getCode())
-                .orElseThrow(()-> new DataNotFoundException("Code is wrong !"));
-        LocalDateTime currentTime = LocalDateTime.now();
-        LocalDateTime sentDate = passwords.getSentDate();
-        Duration duration = Duration.between(sentDate, currentTime);
-        long minutes = duration.toMinutes();
-        if(minutes <= passwords.getExpiry()) {
-            userEntity.setIsAuthenticated(true);
-            userRepository.save(userEntity);
-            return parse(userEntity);
-        }
-        throw new AuthenticationCredentialsNotFoundException("Code is expired");
     }
 
     @Override
@@ -134,6 +114,28 @@ public class UserServiceIml implements UserService{
     }
 
     @Override
+    public UserEntity findById(UUID userId) {
+        return userRepository.findById(userId).orElseThrow(()-> new DataNotFoundException(" User not found !"));
+    }
+
+    @Override
+    public UserResponseDto verify(VerifyDto verifyDto) {
+        UserEntity userEntity = userRepository.findByEmail(verifyDto.getEmail())
+                .orElseThrow(() -> new DataNotFoundException("User not found with email: " + verifyDto.getEmail()));
+        UserPassword passwords = passwordRepository.getUserPasswordById(userEntity.getId(),verifyDto.getCode())
+                .orElseThrow(()-> new DataNotFoundException("Code is wrong !"));
+        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime sentDate = passwords.getSentDate();
+        Duration duration = Duration.between(sentDate, currentTime);
+        long minutes = duration.toMinutes();
+        if(minutes <= passwords.getExpiry()) {
+            userEntity.setIsAuthenticated(true);
+            userRepository.save(userEntity);
+            return parse(userEntity);
+        }
+        throw new AuthenticationCredentialsNotFoundException("Code is expired");
+    }
+    @Override
     public String forgetPassword(ForgetDto forgetDto) {
         UserEntity userEntity = userRepository.findByEmail(forgetDto.getEmail())
                 .orElseThrow(() -> new DataNotFoundException("User not found with email: "));
@@ -154,6 +156,46 @@ public class UserServiceIml implements UserService{
             return "Password successfully updated";
         }
         throw new AuthenticationCredentialsNotFoundException("Code expired");
+    }
+
+    @Override
+    public SubjectDto verifyToken(String token) {
+        try{
+            Jws<Claims> claimsJws = jwtService.extractToken(token);
+            Claims claims = claimsJws.getBody();
+            String subject = claims.getSubject();
+            List<String> roles = (List<String>) claims.get("roles");
+            return new SubjectDto(UUID.fromString(subject),roles);
+        }catch (ExpiredJwtException e){
+            throw new AuthenticationCredentialsNotFoundException("Token expired");
+        }
+
+    }
+
+    @Override
+    public String getVerificationCode(String email) {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new DataNotFoundException("User not found with email: " + email));
+        emailSend(user);
+        return "Verify code sent";
+    }
+
+
+    @Override
+    public String getAccessToken(String refreshToken, UUID userId) {
+        try{
+
+            Jws<Claims> claimsJws = jwtService.extractToken(refreshToken);
+            Claims claims = claimsJws.getBody();
+            String subject = claims.getSubject();
+
+            UserEntity userEntity = userRepository.findById(UUID.fromString(subject))
+                    .orElseThrow(() -> new DataNotFoundException("User not found with id: " + userId));
+            return jwtService.generateAccessToken(userEntity);
+
+        }catch (ExpiredJwtException e) {
+            throw new AuthenticationCredentialsNotFoundException("Token expired");
+        }
     }
 
     private UserResponseDto parse(UserEntity user) {

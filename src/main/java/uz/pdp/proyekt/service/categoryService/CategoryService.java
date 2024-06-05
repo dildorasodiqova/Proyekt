@@ -1,6 +1,7 @@
 package uz.pdp.proyekt.service.categoryService;
 
 import uz.pdp.proyekt.dtos.createDtos.CategoryCreateDto;
+import uz.pdp.proyekt.dtos.responseDto.BaseResponse;
 import uz.pdp.proyekt.dtos.responseDto.CategoryResponseDto;
 import uz.pdp.proyekt.entities.CategoryEntity;
 
@@ -12,5 +13,10 @@ public interface CategoryService {
 
     List<CategoryResponseDto> getAll(int page, int size);
 
-    CategoryEntity getById(UUID categoryId);
+    CategoryEntity findById(UUID categoryId);
+    CategoryResponseDto getById(UUID categoryId);
+    BaseResponse<List<CategoryResponseDto>> subCategories(UUID parentId, int page, int size );
+
+    BaseResponse<List<CategoryResponseDto>> firstCategories();
+    BaseResponse<String> update(UUID categoryId, CategoryCreateDto dto);
 }

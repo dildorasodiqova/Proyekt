@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uz.pdp.proyekt.entities.CategoryEntity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,6 +27,9 @@ public class ProductResponseDto {
     private Double price;
 
     private String description;
-    private CategoryShortInfo category;//** shuyerda nima boladi
+    private CategoryShortInfo category;
     private List<UUID> photos;
+
+    private LocalDateTime createdDate;
+    private LocalDateTime updatedDate;
 }

@@ -1,23 +1,24 @@
 package uz.pdp.proyekt.dtos.responseDto;
-
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import uz.pdp.proyekt.entities.UserEntity;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@AllArgsConstructor
 @NoArgsConstructor
-@Data
-@Builder
-public class FeedbackResponseDTO {
+@AllArgsConstructor
+@Getter
+@Setter
+public class ProductLikeResponseDto {
     private UUID id;
-    private UUID productId;
-    private String userName;
-    private int rate; /// yulduzchalari
-    private String text;
+
+    private UserShortInfo user;
+
+    private ProductResponseDto product;
+
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
 }

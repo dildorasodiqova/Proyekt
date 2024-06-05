@@ -2,14 +2,15 @@ package uz.pdp.proyekt.service.orderProductService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import uz.pdp.uzummarket.Dto.requestSTO.OrderProductCreateDTO;
-import uz.pdp.uzummarket.Dto.responceDTO.OrderProductResponseDTO;
-import uz.pdp.uzummarket.entity.Order;
-import uz.pdp.uzummarket.entity.OrderProduct;
-import uz.pdp.uzummarket.entity.Product;
-import uz.pdp.uzummarket.exception.DataNotFoundException;
-import uz.pdp.uzummarket.repository.OrderProductRepository;
-import uz.pdp.uzummarket.repository.ProductRepository;
+import uz.pdp.proyekt.dtos.createDtos.OrderProductCreateDTO;
+import uz.pdp.proyekt.dtos.responseDto.BaseResponse;
+import uz.pdp.proyekt.dtos.responseDto.OrderProductResponseDTO;
+import uz.pdp.proyekt.entities.OrderEntity;
+import uz.pdp.proyekt.entities.OrderProductEntity;
+import uz.pdp.proyekt.entities.ProductEntity;
+import uz.pdp.proyekt.exception.DataNotFoundException;
+import uz.pdp.proyekt.repositories.OrderProductRepository;
+import uz.pdp.proyekt.repositories.ProductRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,48 +24,61 @@ public class OrderProductServiceImpl implements OrderProductService {
     private final ProductRepository productRepository;
 
     @Override
-    public List<OrderProductResponseDTO> save(Order order, List<OrderProductCreateDTO> products) {
-        List<OrderProduct> pr = products.stream().map(item -> {
-            Product product = productRepository.findById(item.getProductId()).orElseThrow(() -> new DataNotFoundException("Product not found"));
-            product.setCount(product.getCount() - item.getCount());
+    public BaseResponse<List<OrderProductResponseDTO>> save(OrderEntity order, List<OrderProductCreateDTO> products) {
+        List<OrderProductEntity> pr = products.stream().map(item -> {
+            ProductEntity product = productRepository.findById(item.getProductId()).orElseThrow(() -> new DataNotFoundException("Product not found"));
+            product.setNowCount(product.getNowCount() - item.getCount());
             productRepository.save(product);
-            return new OrderProduct(order, product, item.getCount(), item.getPrice());
+            return new OrderProductEntity(order, product, item.getCount(), item.getPrice());
         }).toList();
         orderProductRepository.saveAll(pr);
-        return parse(pr);
+        return BaseResponse.<List<OrderProductResponseDTO>>builder()
+                .data(parse(pr))
+                .success(true)
+                .message("success")
+                .code(200)
+                .build();
     }
 
-    public List<OrderProductResponseDTO> parse(List<OrderProduct> products) {
+
+
+
+    public List<OrderProductResponseDTO> parse(List<OrderProductEntity> products) {
         return products
                 .stream()
-                .map(item -> new OrderProductResponseDTO(item.getOrder().getId(), item.getProduct().getName(), item.getCount(), item.getPrice()))
+                .map(item -> new OrderProductResponseDTO(item.getId(), item.getOrder().getId(), item.getProduct().getName(), item.getCount(), item.getPrice(), item.getCreatedDate(), item.getUpdateDate()))
                 .toList();
     }
 
     @Override
-    public List<OrderProductResponseDTO> update(List<OrderProductCreateDTO> products, Order order) {
-        List<OrderProduct> orderProducts = order.getOrderProducts();
-        List<UUID> oldProducts = orderProducts.stream().map(OrderProduct::getId).toList();
+    public BaseResponse<List<OrderProductResponseDTO>> update(List<OrderProductCreateDTO> products, OrderEntity order) {
+        List<OrderProductEntity> orderProducts = order.getOrderProducts();
+        List<UUID> oldProducts = orderProducts.stream().map(OrderProductEntity::getId).toList();
         List<UUID> newProducts = products.stream().map(OrderProductCreateDTO::getProductId).toList();
-        List<OrderProduct> saveAll = new ArrayList<>();
+        List<OrderProductEntity> saveAll = new ArrayList<>();
         products.forEach(item -> {
             if (!oldProducts.contains(item.getProductId())){
-                Product product = productRepository.findById(item.getProductId()).orElseThrow(() -> new DataNotFoundException("Product not found"));
-                saveAll.add(new OrderProduct(order, product, item.getCount(), item.getPrice()));
+                ProductEntity product = productRepository.findById(item.getProductId()).orElseThrow(() -> new DataNotFoundException("Product not found"));
+                saveAll.add(new OrderProductEntity(order, product, item.getCount(), item.getPrice()));
             }else {
-                Optional<OrderProduct> first = orderProducts.stream().filter(product -> product.getProduct().getId().equals(item.getProductId())).findFirst();
+                Optional<OrderProductEntity> first = orderProducts.stream().filter(product -> product.getProduct().getId().equals(item.getProductId())).findFirst();
                if (first.isPresent()){
-                   OrderProduct orderProduct = first.get();
+                   OrderProductEntity orderProduct = first.get();
                    orderProduct.setCount(item.getCount());
                    orderProduct.setPrice(item.getPrice());
                    saveAll.add(orderProduct);
                }
             }
         });
-        List<OrderProduct> deleteProducts = orderProducts.stream().filter(item -> !newProducts.contains(item.getId())).toList();
+        List<OrderProductEntity> deleteProducts = orderProducts.stream().filter(item -> !newProducts.contains(item.getId())).toList();
         orderProductRepository.deleteAll(deleteProducts);
-        List<OrderProduct> list = orderProductRepository.saveAll(saveAll);
-        return parse(list);
+        List<OrderProductEntity> list = orderProductRepository.saveAll(saveAll);
+        return BaseResponse.<List<OrderProductResponseDTO>>builder()
+                .data(parse(list))
+                .success(true)
+                .message("success")
+                .code(200)
+                .build();
     }
 
 
