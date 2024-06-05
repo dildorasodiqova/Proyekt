@@ -1,5 +1,6 @@
 package uz.pdp.proyekt.entities;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -22,8 +23,13 @@ import java.util.Set;
 @Table(name = "user_entity")
 public class UserEntity extends BaseEntity implements UserDetails {
     private String name;
+
+    @Column(unique = true)
     private String username;
+
+    @Column(unique = true)
     private String email;
+
     private String password;
     private UserRole userRole;
 

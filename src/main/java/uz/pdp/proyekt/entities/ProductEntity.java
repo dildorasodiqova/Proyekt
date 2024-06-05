@@ -13,6 +13,7 @@ import lombok.Setter;
 @Entity(name = "ProductEntity")
 @Table(name = "product")
 public class ProductEntity extends BaseEntity{
+    @Column(unique = true)
     private String name;
 
     private Integer oldCount;

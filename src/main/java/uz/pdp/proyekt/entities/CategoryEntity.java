@@ -1,8 +1,6 @@
 package uz.pdp.proyekt.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,9 +16,10 @@ import java.util.UUID;
 @Entity(name = "CategoryEntity")
 @Table(name = "category_entity")
 public class CategoryEntity extends BaseEntity {
+    @Column(unique = true)
     private String name;
-    private String
-    @ManyToOne
+
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = true)
     private CategoryEntity parentId;
 
 }
