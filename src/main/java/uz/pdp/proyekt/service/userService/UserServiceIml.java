@@ -144,7 +144,7 @@ public class UserServiceIml implements UserService{
     public String forgetPassword(ForgetDto forgetDto) {
         UserEntity userEntity = userRepository.findByEmail(forgetDto.getEmail())
                 .orElseThrow(() -> new DataNotFoundException("User not found with email: "));
-        if(SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
+        if(!SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
             throw new AuthenticationCredentialsNotFoundException("User is not verified");
         }
 
