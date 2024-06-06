@@ -28,10 +28,7 @@ spring:
   flyway:
     enabled: false
 
-logging:
-  level:
-    org:
-      flywaydb=DEBUG:
+
 springdoc:
   api-docs:
     enabled: true
