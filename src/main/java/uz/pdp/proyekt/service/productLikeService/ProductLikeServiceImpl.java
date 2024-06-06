@@ -29,7 +29,7 @@ public class ProductLikeServiceImpl implements ProductLikeService{
 
 
     @Override
-    public ProductLikeResponseDto create(ProductLikeCreateDto dto) {
+    public BaseResponse<ProductLikeResponseDto> create(ProductLikeCreateDto dto) {
         Optional<ProductLikeEntity> existingProductLike = productLikeRepository.getAllByUserIdAndProductId(dto.getUserId(), dto.getProductId());
         if (existingProductLike.isPresent()) {
             throw new BadRequestException("You have already liked this product!");
@@ -42,7 +42,13 @@ public class ProductLikeServiceImpl implements ProductLikeService{
                 )
         );
 
-        return parse(productLikeEntity);
+        return BaseResponse.<ProductLikeResponseDto>builder()
+                .data(parse(productLikeEntity))
+                .success(true)
+                .message("success")
+                .code(200)
+                .build();
+
     }
 
 

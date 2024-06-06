@@ -3,6 +3,7 @@ package uz.pdp.proyekt.service.feedbackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uz.pdp.proyekt.dtos.createDtos.FeedBackCreateDTO;
+import uz.pdp.proyekt.dtos.responseDto.BaseResponse;
 import uz.pdp.proyekt.dtos.responseDto.FeedbackResponseDTO;
 import uz.pdp.proyekt.entities.FeedbackEntity;
 import uz.pdp.proyekt.entities.ProductEntity;
@@ -26,11 +27,13 @@ public class FeedbackServiceImpl implements FeedbackService {
     private final ProductService productService;
 
     @Override
-    public FeedbackResponseDTO create(FeedBackCreateDTO dto) {
+    public BaseResponse<FeedbackResponseDTO> create(FeedBackCreateDTO dto) {
         ProductEntity product = productService.findById(dto.getProductId());
         UserEntity user = userService.findById(dto.getUserId());
-
-        return parse(feedBackRepository.save(new FeedbackEntity(product, user, dto.getRate(), dto.getText())));
+        FeedbackEntity entity = feedBackRepository.save(new FeedbackEntity(product, user, dto.getRate(), dto.getText()));
+        return BaseResponse.<FeedbackResponseDTO>builder()
+                .data(parse(entity))
+                .build();
     }
 
     private FeedbackResponseDTO parse(FeedbackEntity dto) {
@@ -38,28 +41,47 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
-    public FeedbackResponseDTO findById(UUID feedbackId) {
+    public BaseResponse<FeedbackResponseDTO> findById(UUID feedbackId) {
         FeedbackEntity feedback = feedBackRepository.findById(feedbackId).orElseThrow(() -> new DataNotFoundException("Feedback not found"));
-        return parse(feedback);
+        return BaseResponse.<FeedbackResponseDTO>builder()
+                .data(parse(feedback))
+                .success(true)
+                .message("success")
+                .code(200)
+                .build();
+
     }
 
     @Override
-    public List<FeedbackResponseDTO> getByProductId(UUID productId) {
+    public BaseResponse<List<FeedbackResponseDTO>> getByProductId(UUID productId) {
         List<FeedbackEntity> allByProductId = feedBackRepository.findAllByProductId(productId);
-        return allByProductId.stream()
+        List<FeedbackResponseDTO> collect = allByProductId.stream()
                 .map(this::parse)
-                .collect(Collectors.toList());
+                .toList();
+
+        return BaseResponse.<List<FeedbackResponseDTO>>builder()
+                .data(collect)
+                .success(true)
+                .message("success")
+                .code(200)
+                .build();
+
     }
 
 
     @Override
-    public String delete(UUID feedbackId, UUID userId)  {
+    public BaseResponse<String> delete(UUID feedbackId, UUID userId)  {
         FeedbackEntity feedback = feedBackRepository.findById(feedbackId).orElseThrow(() -> new DataNotFoundException("Feedback not found !"));
         UserEntity user = userService.findById(userId);
         if (!(Objects.equals(feedback.getUser().getId(), userId) || Objects.equals(user.getUserRole(), ADMIN))){
            throw new BadRequestException("Something is wrong ! \n Please try again !");
         }
         feedBackRepository.delete(feedback);
-        return "Successfully";
+        return BaseResponse.<String>builder()
+                .data("Successfully")
+                .success(true)
+                .message("success")
+                .code(200)
+                .build();
     }
 }

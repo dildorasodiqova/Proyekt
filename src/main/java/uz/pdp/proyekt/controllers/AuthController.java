@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uz.pdp.proyekt.dtos.createDtos.*;
+import uz.pdp.proyekt.dtos.responseDto.BaseResponse;
 import uz.pdp.proyekt.dtos.responseDto.JwtResponse;
 import uz.pdp.proyekt.dtos.responseDto.UserResponseDto;
 import uz.pdp.proyekt.service.userService.UserService;
@@ -33,14 +34,14 @@ public class AuthController {
 
     @PermitAll
     @PostMapping("/forget-password")
-    public ResponseEntity<String> forgetPassword(@Valid @RequestBody ForgetDto forgetDto) {
+    public ResponseEntity<BaseResponse<String>> forgetPassword(@Valid @RequestBody ForgetDto forgetDto) {
         return ResponseEntity.ok(userService.forgetPassword(forgetDto));
     }
 
     @PermitAll
     @PostMapping("/sign-up")
-    public UserResponseDto signUp(@Valid @RequestBody UserCreateDto userCreateDto) {
-        return userService.signUp(userCreateDto);
+    public ResponseEntity<BaseResponse<UserResponseDto>> signUp(@Valid @RequestBody UserCreateDto userCreateDto) {
+        return ResponseEntity.ok(userService.signUp(userCreateDto));
     }
 
     @PermitAll

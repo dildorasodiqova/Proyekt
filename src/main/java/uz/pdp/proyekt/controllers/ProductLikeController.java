@@ -29,7 +29,7 @@ public class ProductLikeController {
     )
     @PreAuthorize(value = "hasAuthority('USER') or hasAuthority('ADMIN')")
     @PostMapping()
-    public ResponseEntity<ProductLikeResponseDto> create(@Valid @RequestBody ProductLikeCreateDto dto){
+    public ResponseEntity<BaseResponse<ProductLikeResponseDto>> create(@Valid @RequestBody ProductLikeCreateDto dto){
         return ResponseEntity.ok(productLikeService.create(dto));
     }
 

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ProductLikeService {
-    ProductLikeResponseDto create(ProductLikeCreateDto dto);
+    BaseResponse<ProductLikeResponseDto> create(ProductLikeCreateDto dto);
 
     BaseResponse<PageImpl<ProductLikeResponseDto>> allOfUser(int size, int page, UUID userId);
 

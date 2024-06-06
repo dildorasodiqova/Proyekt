@@ -12,7 +12,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import uz.pdp.proyekt.dtos.createDtos.*;
+import uz.pdp.proyekt.dtos.responseDto.BaseResponse;
 import uz.pdp.proyekt.dtos.responseDto.JwtResponse;
+import uz.pdp.proyekt.dtos.responseDto.ShopResponseDto;
 import uz.pdp.proyekt.dtos.responseDto.UserResponseDto;
 import uz.pdp.proyekt.entities.UserEntity;
 import uz.pdp.proyekt.entities.UserPassword;
@@ -33,33 +35,44 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceIml implements UserService{
+public class UserServiceIml implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final MailService mailService;
     private final PasswordRepository passwordRepository;
     private final ModelMapper modelMapper;
+
     @Override
-    public UserResponseDto signUp(UserCreateDto dto) {
+    public BaseResponse<UserResponseDto> signUp(UserCreateDto dto) {
         Optional<UserEntity> optionalUser = userRepository.findAllByEmailOrUsername(dto.getEmail(), dto.getUsername());
-        if(optionalUser.isPresent()) {
+        if (optionalUser.isPresent()) {
             throw new DataAlreadyExistsException("User already exists with : " + dto.getEmail() + "or" + dto.getUsername());
         }
         UserEntity user = modelMapper.map(dto, UserEntity.class);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
         emailSend(user);
-        return parse(user);
+        return BaseResponse.<UserResponseDto>builder()
+                .data(parse(user))
+                .success(true)
+                .message("success")
+                .code(200)
+                .build();
     }
 
     @Override
-    public String deleteUser(UUID userId) {
+    public BaseResponse<String> deleteUser(UUID userId) {
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new DataNotFoundException("User not found with id: " + userId));
         userEntity.setIsActive(false);
         userRepository.save(userEntity);
-        return "User deleted";
+        return BaseResponse.<String>builder()
+                .data("User deleted")
+                .success(true)
+                .message("success")
+                .code(200)
+                .build();
     }
 
     @Override
@@ -76,31 +89,43 @@ public class UserServiceIml implements UserService{
 
 
     @Override
-    public List<UserResponseDto> getAll(int page, int size) {
+    public BaseResponse<List<UserResponseDto>> getAll(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
-        return userRepository.findAllByIsActiveTrue(pageRequest).stream().map(this::parse).toList();
+        return BaseResponse.<List<UserResponseDto>>builder()
+                .data(userRepository.findAllByIsActiveTrue(pageRequest).stream().map(this::parse).toList())
+                .success(true)
+                .message("success")
+                .code(200)
+                .build();
+
     }
 
     @Override
     public void emailSend(UserEntity userEntity) {
-        if(!userEntity.getIsActive()) {
+        if (!userEntity.getIsActive()) {
             throw new AuthenticationCredentialsNotFoundException("User is not active");
         }
         String generatedString = RandomStringUtils.randomAlphanumeric(5);
         MailDto mailDto = new MailDto(generatedString, userEntity.getEmail());
         mailService.sendMail(mailDto);
-         passwordRepository.save(new UserPassword(generatedString, userEntity, LocalDateTime.now(), 3));
+        passwordRepository.save(new UserPassword(generatedString, userEntity, LocalDateTime.now(), 3));
     }
 
     @Override
-    public UserResponseDto getById(UUID userId) {
+    public BaseResponse<UserResponseDto> getById(UUID userId) {
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new DataNotFoundException("User not found with id: " + userId));
-        return parse(userEntity);
+        return BaseResponse.<UserResponseDto>builder()
+                .data(parse(userEntity))
+                .success(true)
+                .message("success")
+                .code(200)
+                .build();
+
     }
 
     @Override
-    public String updateStatus(UUID userId, Boolean status, UUID currentUser) {
+    public BaseResponse<String> updateStatus(UUID userId, Boolean status, UUID currentUser) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new DataNotFoundException("User not found with id: " + userId));
 
@@ -114,26 +139,31 @@ public class UserServiceIml implements UserService{
         user.setIsActive(status);
         userRepository.save(user);
 
-        return "Successfully";
+        return BaseResponse.<String>builder()
+                .data("Successfully")
+                .success(true)
+                .message("success")
+                .code(200)
+                .build();
     }
 
 
     @Override
     public UserEntity findById(UUID userId) {
-        return userRepository.findById(userId).orElseThrow(()-> new DataNotFoundException(" User not found !"));
+        return userRepository.findById(userId).orElseThrow(() -> new DataNotFoundException(" User not found !"));
     }
 
     @Override
     public UserResponseDto verify(VerifyDto verifyDto) {
         UserEntity userEntity = userRepository.findByEmail(verifyDto.getEmail())
                 .orElseThrow(() -> new DataNotFoundException("User not found with email: " + verifyDto.getEmail()));
-        UserPassword passwords = passwordRepository.getUserPasswordById(userEntity.getId(),verifyDto.getCode())
-                .orElseThrow(()-> new DataNotFoundException("Code is wrong !"));
+        UserPassword passwords = passwordRepository.getUserPasswordById(userEntity.getId(), verifyDto.getCode())
+                .orElseThrow(() -> new DataNotFoundException("Code is wrong !"));
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime sentDate = passwords.getSentDate();
         Duration duration = Duration.between(sentDate, currentTime);
         long minutes = duration.toMinutes();
-        if(minutes <= passwords.getExpiry()) {
+        if (minutes <= passwords.getExpiry()) {
             SecurityContextHolder.getContext().getAuthentication().isAuthenticated();
             userRepository.save(userEntity);
             return parse(userEntity);
@@ -142,27 +172,36 @@ public class UserServiceIml implements UserService{
     }
 
     @Override
-    public String forgetPassword(ForgetDto forgetDto) {
+    public BaseResponse<String> forgetPassword(ForgetDto forgetDto) {
         UserEntity userEntity = userRepository.findByEmail(forgetDto.getEmail())
                 .orElseThrow(() -> new DataNotFoundException("User not found with email: "));
-        if(!SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
+        if (!SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
             throw new AuthenticationCredentialsNotFoundException("User is not verified");
         }
 
-        UserPassword passwords = passwordRepository.getUserPasswordById(userEntity.getId(),forgetDto.getActivationCode())
-                .orElseThrow(()-> new DataNotFoundException("Code is not found"));
+        UserPassword passwords = passwordRepository.getUserPasswordById(userEntity.getId(), forgetDto.getActivationCode())
+                .orElseThrow(() -> new DataNotFoundException("Code is not found"));
 
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime sentDate = passwords.getSentDate();
         Duration duration = Duration.between(sentDate, currentTime);
         long minutes = duration.toMinutes();
-        if(minutes <= passwords.getExpiry()) {
-            userEntity.setPassword(passwordEncoder.encode(forgetDto.getNewPassword()));
-            userRepository.save(userEntity);
-            return "Password successfully updated";
+
+        if (minutes > passwords.getExpiry()) {
+            throw new AuthenticationCredentialsNotFoundException("Activation code expired");
         }
-        throw new AuthenticationCredentialsNotFoundException("Code expired");
+        userEntity.setPassword(passwordEncoder.encode(forgetDto.getNewPassword()));
+        userRepository.save(userEntity);
+
+        return  BaseResponse.<String>builder()
+                .data("Password successfully updated")
+                .success(true)
+                .message("success")
+                .code(200)
+                .build();
+
     }
+
 
     @Override
     public SubjectDto verifyToken(String token) {
