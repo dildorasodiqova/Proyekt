@@ -25,7 +25,7 @@ import java.util.UUID;
 @MappedSuperclass
 public class BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     protected UUID id;
 
     @CreationTimestamp

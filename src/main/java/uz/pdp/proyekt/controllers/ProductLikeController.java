@@ -8,16 +8,12 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import uz.pdp.proyekt.dtos.createDtos.CategoryCreateDto;
 import uz.pdp.proyekt.dtos.createDtos.ProductLikeCreateDto;
 import uz.pdp.proyekt.dtos.responseDto.BaseResponse;
-import uz.pdp.proyekt.dtos.responseDto.CategoryResponseDto;
 import uz.pdp.proyekt.dtos.responseDto.ProductLikeResponseDto;
-import uz.pdp.proyekt.dtos.responseDto.ProductResponseDto;
 import uz.pdp.proyekt.service.productLikeService.ProductLikeService;
 
 import java.security.Principal;
-import java.util.List;
 import java.util.UUID;
 
 @RestController

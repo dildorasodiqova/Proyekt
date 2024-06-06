@@ -4,6 +4,7 @@ import org.springframework.data.domain.PageImpl;
 import uz.pdp.proyekt.dtos.createDtos.ShopCreateDto;
 import uz.pdp.proyekt.dtos.responseDto.BaseResponse;
 import uz.pdp.proyekt.dtos.responseDto.ShopResponseDto;
+import uz.pdp.proyekt.entities.ShopEntity;
 
 import java.util.UUID;
 
@@ -15,4 +16,6 @@ public interface ShopService {
     BaseResponse<ShopResponseDto> create(ShopCreateDto dto);
 
     BaseResponse<ShopResponseDto> getById(UUID shopId);
+
+     ShopEntity findById(UUID shopId);
 }

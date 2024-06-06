@@ -22,4 +22,5 @@ public class CategoryEntity extends BaseEntity {
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = true)
     private CategoryEntity parentId;
 
+
 }

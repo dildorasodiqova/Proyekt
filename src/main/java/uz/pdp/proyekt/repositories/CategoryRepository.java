@@ -4,7 +4,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import uz.pdp.proyekt.entities.CategoryEntity;
 
 import java.util.List;
@@ -25,6 +27,13 @@ public interface CategoryRepository extends JpaRepository<CategoryEntity, UUID> 
 
     @Query("select c from CategoryEntity c where c.parentId is null")
     List<CategoryEntity> getFirstCategory();
+
+    @Modifying
+    @Query("UPDATE CategoryEntity c SET c.isActive = false WHERE c.id = :categoryId")
+    int deactivateCategory(@Param("categoryId") UUID categoryId);
+
+
+
 
 
 

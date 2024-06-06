@@ -1,6 +1,7 @@
 package uz.pdp.proyekt.dtos.createDtos;
 
 import jakarta.persistence.Column;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,7 @@ import java.util.UUID;
 @Getter
 @Setter
 public class CategoryCreateDto {
-    @Column(nullable = false)
+    @NotBlank(message = "Name cannot be empty")
     private String name;
 
     private UUID parentId;

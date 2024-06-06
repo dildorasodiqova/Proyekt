@@ -7,6 +7,7 @@ import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uz.pdp.proyekt.dtos.createDtos.*;
 import uz.pdp.proyekt.dtos.responseDto.JwtResponse;
@@ -24,13 +25,15 @@ import java.util.UUID;
 public class AuthController {
     private final UserService userService;
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/access-token")
     public String getAccessToken(@RequestBody String refreshToken, Principal principal) {
         return userService.getAccessToken(refreshToken, UUID.fromString(principal.getName()));
     }
 
+    @PermitAll
     @PostMapping("/forget-password")
-    public ResponseEntity<String> forgetPassword(@RequestBody ForgetDto forgetDto) {
+    public ResponseEntity<String> forgetPassword(@Valid @RequestBody ForgetDto forgetDto) {
         return ResponseEntity.ok(userService.forgetPassword(forgetDto));
     }
 
@@ -60,7 +63,7 @@ public class AuthController {
     )
     @PermitAll
     @PostMapping("/verify")
-    public UserResponseDto verify(@RequestBody VerifyDto verifyDto) {
+    public UserResponseDto verify(@Valid @RequestBody VerifyDto verifyDto) {
         return userService.verify(verifyDto);
     }
 

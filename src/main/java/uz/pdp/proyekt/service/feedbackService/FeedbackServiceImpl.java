@@ -10,8 +10,6 @@ import uz.pdp.proyekt.entities.UserEntity;
 import uz.pdp.proyekt.exception.BadRequestException;
 import uz.pdp.proyekt.exception.DataNotFoundException;
 import uz.pdp.proyekt.repositories.FeedBackRepository;
-import uz.pdp.proyekt.repositories.ProductRepository;
-import uz.pdp.proyekt.repositories.UserRepository;
 import uz.pdp.proyekt.service.productService.ProductService;
 import uz.pdp.proyekt.service.userService.UserService;
 

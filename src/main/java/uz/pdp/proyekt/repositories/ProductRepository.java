@@ -3,6 +3,7 @@ package uz.pdp.proyekt.repositories;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import uz.pdp.proyekt.entities.ProductEntity;
@@ -23,7 +24,10 @@ public interface ProductRepository extends JpaRepository<ProductEntity, UUID> {
 
     Page<ProductEntity> getAllByCategoryId(UUID category_id, Pageable pageable);
 
+    Page<ProductEntity> getAllByShops_Id(UUID shops_id, Pageable pageable);
 
-    List<ProductEntity> getProductsByCategory_Id(UUID categoryId);
+    @Modifying
+    @Query("UPDATE ProductEntity p SET p.isActive = false WHERE p.id = :productId")
+    int deactivateProduct(@Param("productId") UUID productId);
 
 }

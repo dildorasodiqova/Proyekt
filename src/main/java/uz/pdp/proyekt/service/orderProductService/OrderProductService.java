@@ -8,9 +8,10 @@ import uz.pdp.proyekt.entities.OrderProductEntity;
 
 
 import java.util.List;
+import java.util.UUID;
 
 public interface OrderProductService {
-    BaseResponse<List<OrderProductResponseDTO>> save(OrderEntity order, List<OrderProductCreateDTO> products);
+    BaseResponse<List<OrderProductResponseDTO>> save(UUID orderId, List<OrderProductCreateDTO> products);
     List<OrderProductResponseDTO> parse(List<OrderProductEntity> products);
     BaseResponse<List<OrderProductResponseDTO>> update(List<OrderProductCreateDTO> products, OrderEntity order);
 }

@@ -6,8 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -27,7 +26,16 @@ public class ProductEntity extends BaseEntity{
 
     private String description;
 
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id")
+    private ShopEntity shops;
+
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
     private CategoryEntity category;
-    
+
+
+
+
+
 }

@@ -10,7 +10,9 @@ import uz.pdp.proyekt.entities.OrderProductEntity;
 import uz.pdp.proyekt.entities.ProductEntity;
 import uz.pdp.proyekt.exception.DataNotFoundException;
 import uz.pdp.proyekt.repositories.OrderProductRepository;
+import uz.pdp.proyekt.repositories.OrderRepository;
 import uz.pdp.proyekt.repositories.ProductRepository;
+import uz.pdp.proyekt.service.orderService.OrderService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,9 +24,11 @@ import java.util.UUID;
 public class OrderProductServiceImpl implements OrderProductService {
     private final OrderProductRepository orderProductRepository;
     private final ProductRepository productRepository;
+    private final OrderRepository orderRepository;
 
     @Override
-    public BaseResponse<List<OrderProductResponseDTO>> save(OrderEntity order, List<OrderProductCreateDTO> products) {
+    public BaseResponse<List<OrderProductResponseDTO>> save(UUID orderId, List<OrderProductCreateDTO> products) {
+        OrderEntity order = orderRepository.findById(orderId).orElseThrow(()-> new DataNotFoundException("Order not found"));
         List<OrderProductEntity> pr = products.stream().map(item -> {
             ProductEntity product = productRepository.findById(item.getProductId()).orElseThrow(() -> new DataNotFoundException("Product not found"));
             product.setNowCount(product.getNowCount() - item.getCount());

@@ -52,6 +52,11 @@ public class ShopServiceImpl implements ShopService{
                 .build();
     }
 
+    @Override
+    public ShopEntity findById(UUID shopId) {
+        return  shopRepository.findById(shopId).orElseThrow(() -> new DataNotFoundException("Shop not found"));
+
+    }
 
 
     @Override

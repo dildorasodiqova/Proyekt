@@ -15,7 +15,6 @@ import uz.pdp.proyekt.exception.DataAlreadyExistsException;
 import uz.pdp.proyekt.exception.DataNotFoundException;
 import uz.pdp.proyekt.repositories.CategoryRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,24 +26,40 @@ public class CategoryServiceImpl implements CategoryService {
     private final ModelMapper modelMapper;
 
     @Override
-    public CategoryResponseDto create(CategoryCreateDto dto, UUID uuid) {
+    public BaseResponse<CategoryResponseDto> create(CategoryCreateDto dto, UUID uuid) {
         Optional<CategoryEntity> byName = categoryRepository.findByName(dto.getName());
         if (byName.isPresent()) throw new DataAlreadyExistsException("This category name already exist.");
+
         CategoryEntity parent = null;
-        if (dto.getParentId() != null)
-            parent = categoryRepository.findById(dto.getParentId()).orElseThrow(() -> new DataNotFoundException("Category not found !"));
-        return parse(categoryRepository.save(new CategoryEntity(dto.getName(), parent)));
+        if (dto.getParentId() != null) {
+            parent = categoryRepository.findById(dto.getParentId())
+                    .orElseThrow(() -> new DataNotFoundException("Category not found !"));
+        }
+
+        CategoryEntity save = categoryRepository.save(new CategoryEntity(dto.getName(), parent));
+
+        return BaseResponse.<CategoryResponseDto>builder()
+                .data(parse(save))
+                .success(true)
+                .message("success")
+                .code(200)
+                .build();
     }
 
     @Override
-    public List<CategoryResponseDto> getAll(int page, int size) {
+    public BaseResponse<List<CategoryResponseDto>> getAll(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         List<CategoryEntity> all = categoryRepository.findAllByIsActiveTrue(pageRequest).get().toList();
-        return parse(all);
+        return BaseResponse.<List<CategoryResponseDto>>builder()
+                .data(parse(all))
+                .success(true)
+                .message("success")
+                .code(200)
+                .build();
     }
 
     private List<CategoryResponseDto> parse(List<CategoryEntity> all) {
-        return all.stream().map(item->modelMapper.map(item,CategoryResponseDto.class)).toList();
+        return all.stream().map(item -> modelMapper.map(item, CategoryResponseDto.class)).toList();
     }
 
 
@@ -58,14 +73,19 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public CategoryResponseDto getById(UUID categoryId) {
-        return parse(categoryRepository.findById(categoryId).orElseThrow(() -> new DataNotFoundException("Category not found")));
+    public BaseResponse<CategoryResponseDto> getById(UUID categoryId) {
+        return BaseResponse.<CategoryResponseDto>builder()
+                .data(parse(categoryRepository.findById(categoryId).orElseThrow(() -> new DataNotFoundException("Category not found"))))
+                .success(true)
+                .message("success")
+                .code(200)
+                .build();
     }
 
     @Override
     public BaseResponse<String> update(UUID categoryId, CategoryCreateDto dto) {
-        if (categoryRepository.existsAllBy(categoryId, dto.getName())){
-            throw  new DataAlreadyExistsException("This category name already exists !");
+        if (categoryRepository.existsAllBy(categoryId, dto.getName())) {
+            throw new DataAlreadyExistsException("This category name already exists !");
         }
         CategoryEntity categoryBy = categoryRepository.findById(categoryId).orElseThrow(() -> new DataNotFoundException("Category not found"));
         categoryBy.setName(dto.getName());
@@ -77,6 +97,21 @@ public class CategoryServiceImpl implements CategoryService {
                 .code(200)
                 .build();
     }
+
+    @Override
+    public BaseResponse<String> delete(UUID categoryId) {
+        int updatedRows = categoryRepository.deactivateCategory(categoryId);
+        if (updatedRows == 0) {
+            throw new DataNotFoundException("Category not found. ");
+        }
+        return BaseResponse.<String>builder()
+                .data("Shop deactivated")
+                .success(true)
+                .message("success")
+                .code(200)
+                .build();
+    }
+
 
     @Override
     public BaseResponse<PageImpl<CategoryResponseDto>> subCategories(UUID parentId, int page, int size) {

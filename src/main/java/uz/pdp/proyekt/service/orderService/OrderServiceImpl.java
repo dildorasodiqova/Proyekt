@@ -18,7 +18,6 @@ import uz.pdp.proyekt.service.orderProductService.OrderProductService;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static uz.pdp.proyekt.enums.OrderStatus.CANCELLED;
 import static uz.pdp.proyekt.enums.OrderStatus.NEW;
@@ -33,7 +32,7 @@ public class OrderServiceImpl implements OrderService {
     private final ModelMapper modelMapper;
 
     @Override
-    public OrderResponseDto add(OrderCreateDto dto) {
+    public BaseResponse<OrderResponseDto> add(OrderCreateDto dto) {
         UserEntity user = userRepository.findById(dto.getUserId()).orElseThrow(() -> new DataNotFoundException("User not found"));
         double price = 0;
         for (OrderProductCreateDTO product : dto.getProducts()) {
@@ -41,30 +40,45 @@ public class OrderServiceImpl implements OrderService {
         }
         OrderEntity order = new OrderEntity(user, price, NEW, false);
         orderRepository.save(order);
-        List<OrderProductResponseDTO> save = orderProductService.save(order, dto.getProducts()).getData();
-        return parse(order, save);
+        List<OrderProductResponseDTO> save = orderProductService.save(order.getId(), dto.getProducts()).getData();
+        return BaseResponse.<OrderResponseDto>builder()
+                .data(parse(order, save))
+                .success(true)
+                .message("success")
+                .code(200)
+                .build();
     }
 
     @Override
-    public OrderResponseDto getById(UUID orderId) {
+    public BaseResponse<OrderResponseDto> getById(UUID orderId) {
         OrderEntity order = orderRepository.findById(orderId).orElseThrow(() -> new DataNotFoundException("Order not found "));
         List<OrderProductEntity> orderProducts = order.getOrderProducts();
 
         List<OrderProductResponseDTO> parse = orderProductService.parse(orderProducts);
         OrderResponseDto map = modelMapper.map(order, OrderResponseDto.class);
         map.setOrderProducts(parse);
-       return map;
+       return BaseResponse.<OrderResponseDto>builder()
+               .data(map)
+               .success(true)
+               .message("success")
+               .code(200)
+               .build();
     }
 
 
 
 
     @Override
-    public OrderResponseDto cancel(UUID orderId) {
+    public BaseResponse<OrderResponseDto> cancel(UUID orderId) {
         OrderEntity order = orderRepository.findById(orderId).orElseThrow(() -> new DataNotFoundException("Order not found"));
         orderRepository.updateStatus(order.getId(), CANCELLED);
         List<OrderProductResponseDTO> parse = orderProductService.parse(order.getOrderProducts());
-        return parse(order, parse);
+        return BaseResponse.<OrderResponseDto>builder()
+                .data(parse(order, parse))
+                .success(true)
+                .message("success")
+                .code(200)
+                .build();
     }
 
 
@@ -89,6 +103,13 @@ public class OrderServiceImpl implements OrderService {
                 .message("success")
                 .code(200)
                 .build();
+    }
+
+    @Override
+    public OrderEntity findById(UUID orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new DataNotFoundException("Order not found"));
+
     }
 
 

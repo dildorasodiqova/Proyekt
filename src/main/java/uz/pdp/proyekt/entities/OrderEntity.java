@@ -13,8 +13,8 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-@Entity(name = "order")
-@Table(name = "order")
+@Entity(name = "orders")
+@Table(name = "orders")
 public class OrderEntity extends BaseEntity{
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
