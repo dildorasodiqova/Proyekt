@@ -29,30 +29,35 @@ public class SecurityConfig {
     private final JwtService jwtService;
     private final AuthenticationService authenticationService;
     private final HandlerExceptionResolver handlerExceptionResolver;
-    
+
 
     @Bean
-    public SecurityFilterChain configure (HttpSecurity http) throws Exception {
+    public SecurityFilterChain configure(HttpSecurity http) throws Exception {
 
-         return http
+        return http
                 .csrf(AbstractHttpConfigurer::disable)
-                .addFilterBefore(new JwtFilter(jwtService,authenticationService,handlerExceptionResolver),
+                .addFilterBefore(new JwtFilter(jwtService, authenticationService, handlerExceptionResolver),
                         UsernamePasswordAuthenticationFilter.class
-                        )
+                )
                 .sessionManagement(sessionManagement -> {
                     sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                 })
-.cors(httpSecurityCorsConfigurer -> {
-            CorsConfiguration configuration = new CorsConfiguration();
-            configuration.setAllowedOrigins(Arrays.asList("*"));
-            configuration.setAllowedMethods(Arrays.asList("*"));
-            configuration.setAllowedHeaders(Arrays.asList("*"));
+                .authorizeHttpRequests(auth ->
+                        auth.requestMatchers("/image/single-upload")
+                                .permitAll()
+                                .anyRequest().authenticated()
+                )
+                .cors(httpSecurityCorsConfigurer -> {
+                    CorsConfiguration configuration = new CorsConfiguration();
+                    configuration.setAllowedOrigins(Arrays.asList("*"));
+                    configuration.setAllowedMethods(Arrays.asList("*"));
+                    configuration.setAllowedHeaders(Arrays.asList("*"));
 
-            UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-            source.registerCorsConfiguration("/**", configuration);
-            httpSecurityCorsConfigurer.configurationSource(source);
-        })
-.build();
+                    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                    source.registerCorsConfiguration("/**", configuration);
+                    httpSecurityCorsConfigurer.configurationSource(source);
+                })
+                .build();
     }
 
     @Bean

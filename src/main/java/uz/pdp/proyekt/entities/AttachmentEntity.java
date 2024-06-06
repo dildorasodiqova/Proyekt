@@ -20,6 +20,4 @@ public class AttachmentEntity extends BaseEntity{
     @Lob
     @Column(name = "bytes")
     private byte[] bytes;
-
-
 }

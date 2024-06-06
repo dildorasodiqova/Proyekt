@@ -30,7 +30,7 @@ public class AttachmentController {
         return fileIdList;
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+//    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/single-upload")
     public ResponseEntity<UUID> uploadImage(@RequestParam("image") MultipartFile file) throws IOException {
         return ResponseEntity.ok(attachmentService.uploadImage(file));
